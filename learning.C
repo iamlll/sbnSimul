@@ -8,16 +8,21 @@
 using namespace std;
 
 void learning(){
+   //save TTree from GENIE event simul output file
    TFile* output = new TFile("output.root");
    TTree* tree = (TTree*)output -> Get("sbnana");
-   vector<int> codes;
+   vector<int> codes; //GENIE/Larsoft codes for interaction types
+   //set addresses of the leaves I'm interested in (energy + interactino type)
    TLeaf* nuEnergy = tree->GetLeaf("interactions.neutrino.energy");
    auto lowE = 10;
    auto highE = 0;
    TLeaf* nuType = tree->GetLeaf("interactions.neutrino.genie_intcode");
 
+   //find min + max energies (GeV)
    for(int i=0; i<nuEnergy->GetBranch()->GetEntries();i++){
+      //Set energy leaf address to event i
       nuEnergy->GetBranch()->GetEntry(i);
+      //Get value actually stored at this address
       auto energy = nuEnergy->GetValue();
       if(energy < lowE) lowE = energy; 
       if(energy > highE) highE = energy;
@@ -31,6 +36,7 @@ void learning(){
       nuType->GetBranch()->GetEntry(i);
       auto energy = nuEnergy->GetValue(); 
       auto type = nuType->GetValue();
+      //create vector of unique interaction type codes
       if(codes.empty()){
          codes.push_back(type);
       }
@@ -43,13 +49,14 @@ void learning(){
    
    vector<TH1D*> hists = vector<TH1D*>();
    
-   srand(123456);
+   srand(123456); //random number generator seed
    char buffer[20]; 
    for(int i=0;i<codes.size();i++){
       sprintf(buffer, "%s%d","GENIEcode",codes[i]);
       cout << buffer << endl;
       hists.push_back(new TH1D(buffer,"",30,0,6));
       auto num = rand()%12; //number between 0 and 12
+      //set different fill colors for the histograms
       if(num==0) hists[i]->SetFillColor(kOrange);
       else if(num==1) hists[i]->SetFillColor(kRed);
       else if(num==2) hists[i]->SetFillColor(kPink);
@@ -64,6 +71,7 @@ void learning(){
       else if(num==11) hists[i]->SetFillColor(kYellow);
    }
 
+   //Fill the different interaction type histograms
    for(int i=0; i<nuType->GetBranch()->GetEntries();i++){
       nuEnergy->GetBranch()->GetEntry(i);
       nuType->GetBranch()->GetEntry(i);
@@ -73,10 +81,12 @@ void learning(){
          if(type==codes[n]) hists[n]->Fill(energy,1);
       }
    }
-
+  
+   //add histograms to stacked histogram
    for(int i=0; i<hists.size();i++){
       parents->Add(hists[i]);
    }
    parents->Draw();
+   //add legend
    gPad->BuildLegend(0.6, 0.7, 0.99, 0.9,"Parent particles");
 }
