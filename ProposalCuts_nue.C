@@ -35,13 +35,12 @@ TLegend* CreateLegend(string legTitle, THStack* stack, string entryTitle){
 }  
 
 void ProposalCuts_nue(){
-  TCanvas* canv = new TCanvas("canv","canv",1000,1000);
+  TCanvas* canv = new TCanvas("canv","canv",1500,1500);
   canv->Divide(2,2);
-  TFile* nue = new TFile("nueOutput.root");
+  TFile* nue = new TFile("output.root");
   THStack* cut1 = (THStack*)nue->Get("fnueCC");
   THStack* cut2 = (THStack*)nue->Get("fGammaNC");
   THStack* cut3 = (THStack*)nue->Get("fnumuCC");
-  THStack* cut_numu = (THStack*)nue->Get("fnumuCandidates");
   //Draw histograms
   canv->cd(1);
   cut1->SetTitle(";E#nu;count");
@@ -60,10 +59,4 @@ void ProposalCuts_nue(){
   cut3->Draw();
   auto leg3 = CreateLegend("CC #nu_#mu", cut3, "#numuCC");
   leg3->Draw();
-
-  canv->cd(4);
-  cut_numu->SetTitle(";E#nu;count");
-  auto leg4 = CreateLegend("#nu_#mu CC candidates", cut_numu, "#mu");
-  cut_numu->Draw();
-  leg4->Draw();
 }
